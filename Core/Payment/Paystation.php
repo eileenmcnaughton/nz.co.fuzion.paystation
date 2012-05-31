@@ -106,7 +106,6 @@ class CRM_Core_Payment_Paystation extends CRM_Core_Payment {
             CRM_Core_Error::fatal( ts( 'Component is invalid' ) );
         }
 
-        // eg. http://internetnz.<stuff>.nz/sites/all/modules/civicrm/
         $url = $config->userFrameworkResourceURL . "extern/psIPN.php";
 
         if ( $component == 'event') {
