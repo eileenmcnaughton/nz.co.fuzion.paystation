@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <extension key="nz.co.fuzion.paystation" type="payment">
-  <downloadUrl>https://github.com/eileenmcnaughton/nz.co.fuzion.paystation/blob/master/nz.co.fuzion.paystation.zip</downloadUrl>
+  <downloadUrl>https://github.com/downloads/eileenmcnaughton/nz.co.fuzion.paystation/nz.co.fuzion.paystation.zip</downloadUrl>
   <file>Paystation</file>
   <name>Paystation</name>
   <description>Paystation Payment Processor (written by Elliot Pahl - Catalyst IT Limited)</description>
