@@ -6,7 +6,7 @@
  */
 
 
-class CRM_Core_Payment_Paystation extends CRM_Core_Payment {
+class nz_co_fuzion_paystation extends CRM_Core_Payment {
   const CHARSET = 'iso-8859-1';
   protected static $_mode = null;
   protected static $_params = array();
@@ -45,7 +45,7 @@ class CRM_Core_Payment_Paystation extends CRM_Core_Payment {
   static function &singleton($mode, &$paymentProcessor) {
     $processorName = $paymentProcessor['name'];
     if (self::$_singleton[$processorName] === null) {
-      self::$_singleton[$processorName] = new CRM_Core_Payment_Paystation($mode, $paymentProcessor);
+      self::$_singleton[$processorName] = new nz_co_fuzion_paystation($mode, $paymentProcessor);
     }
     return self::$_singleton[$processorName];
   }
@@ -93,28 +93,16 @@ class CRM_Core_Payment_Paystation extends CRM_Core_Payment {
      */
   function doTransferCheckout(&$params, $component) {
     $component = strtolower($component);
+    $cancelURL = $this->getCancelURL($component);
+    $url = CRM_Utils_System::url("civicrm/payment/ipn", "processor_name=paystation",false, null, false);
     $config = CRM_Core_Config::singleton();
-    if ($component != 'contribute' && $component != 'event') {
-      CRM_Core_Error::fatal(ts('Component is invalid'));
-    }
 
-    $url = $config->userFrameworkResourceURL . "extern/psIPN.php";
-
-    if ($component == 'event') {
-      $cancelURL = CRM_Utils_System::url('civicrm/event/register', "_qf_Confirm_display=true&qfKey={$params['qfKey']}", false, null, false);
-    }
-    else if ($component == 'contribute') {
-      $cancelURL = CRM_Utils_System::url('civicrm/contribute/transact', "_qf_Confirm_display=true&qfKey={$params['qfKey']}", false, null, false);
-    }
-
-    /*
-         * Build the private data string to pass to Paystation, which they will give back to us with the
-         * transaction result.  We are building this as a comma-separated list so as to avoid long URLs.
-         * Parameters passed: a=contactID, b=contributionID,c=contributionTypeID,d=invoiceID,e=membershipID,f=participantID,g=eventID,h=paystationID
-         */
+   /*
+    * Build the private data string to pass to Paystation, which they will give back to us with the
+    * transaction result.  We are building this as a comma-separated list so as to avoid long URLs.
+    * Parameters passed: a=contactID, b=contributionID,c=contributionTypeID,d=invoiceID,e=membershipID,f=participantID,g=eventID,h=paystationID
+    */
     $privateData = "a={$params['contactID']},b={$params['contributionID']},c={$params['contributionTypeID']},d={$params['invoiceID']},h={$this->_paymentProcessor['user_name']}";
-    //$privateData .= ',h='.$this->_paymentProcessor['user_name'];
-
 
     if ($component == 'event') {
       $privateData .= ",f={$params['participantID']},g={$params['eventID']}";
@@ -130,9 +118,6 @@ class CRM_Core_Payment_Paystation extends CRM_Core_Payment {
 
     // Allow further manipulation of params via custom hooks
     CRM_Utils_Hook::alterPaymentProcessorParams($this, $params, $privateData);
-
-    require_once 'CRM/Core/Payment/PaystationUtils.php';
-    require_once 'CRM/Core/Error.php';
 
     // Paystation parameters
     $paystationURL = $this->_paymentProcessor['url_site'];
@@ -192,5 +177,38 @@ class CRM_Core_Payment_Paystation extends CRM_Core_Payment {
       CRM_Core_Error::fatal(ts('Unable to establish connection to the payment gateway.'));
     }
   }
+  /**
+   * Handle return response from payment processor
+   */
+  function handlePaymentNotification(){
+    $payFlowLinkIPN = new PaystationIPN( );
+    $payFlowLinkIPN ->main( );
+    //if for any reason we come back here
+    CRM_Core_Error::debug_log_message( "It should not be possible to reach this line" );
+  }
+
+  /**
+  * Get URL which the browser should be returned to if they cancel or are unsuccessful
+  * @component string $omponent function is called from
+  * @return string $cancelURL Fully qualified return URL
+  * @todo Ideally this would be in the parent payment class
+  */
+  function getCancelURL($component){
+    $component = strtolower( $component );
+    if ( $component != 'contribute' && $component != 'event' ) {
+      CRM_Core_Error::fatal( ts( 'Component is invalid' ) );
+    }
+    if ( $component == 'event') {
+      $cancelURL = CRM_Utils_System::url( 'civicrm/event/register',
+        "_qf_Confirm_display=true&qfKey={$params['qfKey']}",
+        false, null, false );
+    } else if ( $component == 'contribute' ) {
+      $cancelURL = CRM_Utils_System::url( 'civicrm/contribute/transact',
+        "_qf_Confirm_display=true&qfKey={$params['qfKey']}",
+        false, null, false );
+    }
+    return $cancelURL;
+  }
+
 }
 
