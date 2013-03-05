@@ -298,10 +298,9 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
      * notification or request sent by the payment processor.
      * hex string from paymentexpress is passed to this function as hex string.
      */
-  static function main($rawPostData, $ps_url, $ps_api, $ps_user, $ps_key) {
+  function main($rawPostData, $ps_url, $ps_api, $ps_user, $ps_key) {
     $config = CRM_Core_Config::singleton();
     define('RESPONSE_HANDLER_LOG_FILE', $config->uploadDir . 'CiviCRM.Paystation.log');
-
     $transactionID = isset($rawPostData['ti']) ? $rawPostData['ti'] : '';
     $errorCode = isset($rawPostData['ec']) ? $rawPostData['ec'] : '';
     $errorMessage = isset($rawPostData['em']) ? $rawPostData['em'] : '';
@@ -322,15 +321,14 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
     $qlParams = '?pi=' . $ps_user;
     $qlParams .= isset($rawPostData['ti']) ? '&ti=' . $rawPostData['ti'] : '';
     $url .= $qlParams;
-
     fwrite($message_log, sprintf("\n\r%s:- %s\n", date("D M j G:i:s T Y"), 'Quick Lookup: ' . $url));
 
     $success = false;
 
     // Perform the quick lookup to get data from Paystation
-    require_once 'CRM/Core/Payment/PaystationUtils.php';
-
-    if ($response = quickLookup($url, $message_log)) {
+    require_once 'PaystationUtils.php';
+    $utils = new PaystationUtils();
+    if ($response = $utils->quickLookup($url, $message_log)) {
       //CRM_Core_Error::debug_var('response', $response);
       fwrite($message_log, sprintf("\n\r%s:- %s\n", date("D M j G:i:s T Y"), $response));
 
@@ -362,7 +360,6 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
           }
 
           $privateData = $privateData ? self::stringToArray($privateData) : '';
-
           // Private Data consists of : a=contactID,b=contributionID,c=contributionTypeID,d=invoiceID,e=membershipID,f=participantID,g=eventID,h=paystationID
           $privateData['contactID'] = $privateData['a'];
           $privateData['contributionID'] = $privateData['b'];
@@ -386,12 +383,9 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
           list ($mode, $component, $paymentProcessorID, $duplicateTransaction) = self::getContext($privateData, $PaystationTransactionID);
           $mode = $mode ? 'test' : 'live';
 
-          //CRM_Core_Error::debug_var('mode', $mode);
           CRM_Core_Error::debug_var('component', $component);
-          //CRM_Core_Error::debug_var('paymentProcessorID', $paymentProcessorID);
           CRM_Core_Error::debug_var('duplicateTransaction', $duplicateTransaction);
 
-          require_once 'CRM/Core/BAO/PaymentProcessor.php';
           $paymentProcessor = CRM_Core_BAO_PaymentProcessor::getPayment($paymentProcessorID, $mode);
 
           $ipn = & self::singleton($mode, $component, $paymentProcessor);
@@ -433,6 +427,7 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
      * to an array of values.
      */
   static function stringToArray($str) {
+    $str = urldecode($str);
     $vars = $labels = array();
     $labels = explode(',', $str);
     foreach ($labels as $label) {

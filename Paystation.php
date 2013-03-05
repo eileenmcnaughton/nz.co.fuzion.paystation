@@ -139,10 +139,12 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
     if ($this->_mode == 'test') {
       $psParams['pstn_tm'] = 't'; // Test mode
     }
-    $paystationParams = 'paystation&' . paystation_query_string_encode($psParams);
+    require_once 'PaystationUtils.php';// expect this wouldn't be required if converted to a module
+    $utils = new PaystationUtils();
+    $paystationParams = 'paystation&' . $utils->paystation_query_string_encode($psParams);
 
     CRM_Core_Error::debug_log_message('Paystation Params: ' . $paystationParams);
-    if ($initiationResult = directTransaction($paystationURL, $paystationParams)) {
+    if ($initiationResult = $utils->directTransaction($paystationURL, $paystationParams)) {
       $xml = simplexml_load_string($initiationResult);
       if (isset($xml)) {
         $result = (array) $xml;
@@ -181,8 +183,55 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
    * Handle return response from payment processor
    */
   function handlePaymentNotification(){
+    require_once 'PaystationIPN.php';// expect this wouldn't be required if converted to a module
     $payFlowLinkIPN = new PaystationIPN( );
-    $payFlowLinkIPN ->main( );
+    $data = isset($_GET['data']) ? $payFlowLinkIPN->stringToArray($_GET['data']) : array();
+    /*
+     * Get the password from the Payment Processor's table based on the Paystation User ID being
+    * passed back from the server
+    */
+    $query = "
+      SELECT url_site, url_api, password, user_name, signature
+      FROM civicrm_payment_processor
+      WHERE payment_processor_type = 'Paystation'
+      AND user_name = %1
+    ";
+    // updater's notes :not sure why you would continue at all if paystationID not set?
+    if (isset($data['h'])) {
+      $data['paystationID'] = $data['h'];
+      $params = array(
+        1 => array(
+          $data['paystationID'],
+          'String'
+        )
+      );
+     $psSettings = & CRM_Core_DAO::executeQuery($query, $params);
+
+     while ($psSettings->fetch()) {
+      $psUrl = $psSettings->url_site;
+      $psApi = $psSettings->url_api;
+      $psUser = $psSettings->user_name;
+      $psKey = $psSettings->password;
+    }
+
+      $rawPostData = array(
+        'ti' => $_GET['ti'],
+        'ec' => $_GET['ec'],
+        'em' => $_GET['em'],
+        'ms' => $_GET['ms'],
+        'am' => $_GET['am'], // Amount in *cents*
+        'data' => $_GET['data'],
+        'component' => $_GET['component'],
+        'qfKey' => $_GET['qfKey']
+      );
+    }
+    else{
+      CRM_Core_Error::debug_log_message( "Failed to decode return IPN string" );
+
+    }
+
+    $payFlowLinkIPN ->main($rawPostData, $psUrl, $psApi, $psUser, $psKey);
+
     //if for any reason we come back here
     CRM_Core_Error::debug_log_message( "It should not be possible to reach this line" );
   }
@@ -211,4 +260,3 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
   }
 
 }
-
