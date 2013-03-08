@@ -67,7 +67,7 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
      */
   static function &singleton($mode, $component, &$paymentProcessor) {
     if (self::$_singleton === null) {
-      self::$_singleton = new CRM_Core_Payment_PaystationIPN($mode, $paymentProcessor);
+      self::$_singleton = new PaystationIPN($mode, $paymentProcessor);
     }
     return self::$_singleton;
   }
@@ -215,7 +215,6 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
      * @static
      */
   static function getContext($privateData, $orderNo) {
-    require_once 'CRM/Contribute/DAO/Contribution.php';
 
     $component = null;
     $isTest = null;
@@ -250,9 +249,6 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
         echo "Failure: Could not find contribution page for contribution record: $contributionID<p>";
         exit();
       }
-
-      // get the payment processor id from contribution page
-      $paymentProcessorID = CRM_Core_DAO::getFieldValue('CRM_Contribute_DAO_ContributionPage', $contribution->contribution_page_id, 'payment_processor_id');
     }
     else {
 
@@ -274,11 +270,13 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
         echo "Failure: Could not find event: $eventID<p>";
         exit();
       }
-
-      // get the payment processor id from contribution page
-      $paymentProcessorID = $event->payment_processor_id;
     }
-
+    $paymentProcessorID = CRM_Core_DAO::getFieldValue(
+      'CRM_Core_DAO_PaymentProcessor',
+      'Paystation',
+      'id',
+      'payment_processor_type'
+    );
     if (! $paymentProcessorID) {
       CRM_Core_Error::debug_log_message("Could not find payment processor for contribution record: $contributionID");
       echo "Failure: Could not find payment processor for contribution record: $contributionID<p>";
@@ -388,7 +386,7 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
 
           $paymentProcessor = CRM_Core_BAO_PaymentProcessor::getPayment($paymentProcessorID, $mode);
 
-          $ipn = & self::singleton($mode, $component, $paymentProcessor);
+          $ipn = self::singleton($mode, $component, $paymentProcessor);
 
           if ($duplicateTransaction == 0) {
             $ipn->newOrderNotify($privateData, $component, $merchantData);
