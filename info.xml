@@ -16,7 +16,7 @@
   </maintainer>
   <releaseDate>2012-02-13</releaseDate>
   <version>2.0</version>
-  <develStage>live</develStage>
+  <develStage>stable</develStage>
   <compatibility>
     <ver>4.2</ver>
     <ver>4.3</ver>

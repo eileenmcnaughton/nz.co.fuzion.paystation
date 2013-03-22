@@ -185,7 +185,13 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
   function handlePaymentNotification(){
     require_once 'PaystationIPN.php';// expect this wouldn't be required if converted to a module
     $payFlowLinkIPN = new PaystationIPN( );
-    $data = isset($_GET['data']) ? $payFlowLinkIPN->stringToArray($_GET['data']) : array();
+    if(!empty($_POST['data'])){
+      $httpRequest = $_POST;
+    }
+    else{
+      $httpRequest = $_GET;
+    }
+    $data = isset($httpRequest['data']) ? $payFlowLinkIPN->stringToArray($httpRequest['data']) : array();
     /*
      * Get the password from the Payment Processor's table based on the Paystation User ID being
     * passed back from the server
@@ -215,14 +221,14 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
     }
 
       $rawPostData = array(
-        'ti' => $_GET['ti'],
-        'ec' => $_GET['ec'],
-        'em' => $_GET['em'],
-        'ms' => $_GET['ms'],
-        'am' => $_GET['am'], // Amount in *cents*
-        'data' => $_GET['data'],
-        'component' => $_GET['component'],
-        'qfKey' => $_GET['qfKey']
+        'ti' => $httpRequest['ti'],
+        'ec' => $httpRequest['ec'],
+        'em' => $httpRequest['em'],
+        'ms' => $httpRequest['ms'],
+        'am' => $httpRequest['am'], // Amount in *cents*
+        'data' => $httpRequest['data'],
+        'component' => $httpRequest['component'],
+        'qfKey' => $httpRequest['qfKey']
       );
     }
     else{
