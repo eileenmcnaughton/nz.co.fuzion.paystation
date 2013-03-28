@@ -185,11 +185,11 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
   function handlePaymentNotification(){
     require_once 'PaystationIPN.php';// expect this wouldn't be required if converted to a module
     $payFlowLinkIPN = new PaystationIPN( );
-    if(!empty($_POST['data'])){
-      $httpRequest = $_POST;
-    }
-    else{
-      $httpRequest = $_GET;
+    $httpRequest = $_GET;
+    if(empty($httpRequest['data'] )){
+      $postXml = (array) simplexml_load_string(file_get_contents("php://input"));
+      $userData =  (array) $postXml['UserAdditionalVars'];
+      $httpRequest = array_merge($postXml, (array) $postXml['UserAdditionalVars']);
     }
     $data = isset($httpRequest['data']) ? $payFlowLinkIPN->stringToArray($httpRequest['data']) : array();
     /*
