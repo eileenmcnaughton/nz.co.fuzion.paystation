@@ -27,11 +27,11 @@
     <passwordLabel>Gateway ID</passwordLabel>
     <signatureLabel></signatureLabel>
     <subjectLabel></subjectLabel>
-    <urlSiteDefault>https://www.paystation.co.nz/direct/paystation.dll%27</urlSiteDefault>
-    <urlApiDefault>https://www.paystation.co.nz/lookup/quick/%27</urlApiDefault>
+    <urlSiteDefault>https://www.paystation.co.nz/direct/paystation.dll</urlSiteDefault>
+    <urlApiDefault>https://www.paystation.co.nz/lookup/quick/</urlApiDefault>
     <urlRecurDefault></urlRecurDefault>
-    <urlSiteTestDefault>https://www.paystation.co.nz/direct/paystation.dll%27</urlSiteTestDefault>
-    <urlApiTestDefault>https://www.paystation.co.nz/lookup/quick/%27</urlApiTestDefault>
+    <urlSiteTestDefault>https://www.paystation.co.nz/direct/paystation.dll</urlSiteTestDefault>
+    <urlApiTestDefault>https://www.paystation.co.nz/lookup/quick/</urlApiTestDefault>
     <urlRecurTestDefault></urlRecurTestDefault>
     <urlButtonDefault></urlButtonDefault>
     <urlButtonTestDefault></urlButtonTestDefault>
