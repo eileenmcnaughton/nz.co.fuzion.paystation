@@ -2,9 +2,10 @@
 
 /*
  * Paystation Functionality Copyright (C) 2010 Elliot Pahl, Catalyst IT Limited
- * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License, version 3
+ *
+ * @license http://www.gnu.org/licenses/agpl-3.0.html
+ *   GNU Affero General Public License, version 3
  */
-
 
 class nz_co_fuzion_paystation extends CRM_Core_Payment {
   const CHARSET = 'iso-8859-1';
@@ -12,21 +13,21 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
   protected static $_params = array();
 
   /**
-     * We only need one instance of this object. So we use the singleton
-     * pattern and cache the instance in this variable
-     *
-     * @var object
-     * @static
-     */
+   * We only need one instance of this object. So we use the singleton
+   * pattern and cache the instance in this variable
+   *
+   * @var object
+   * @static
+   */
   private static $_singleton = null;
 
   /**
-     * Constructor
-     *
-     * @param string $mode the mode of operation: live or test
-     *
-     * @return void
-     */
+   * Constructor
+   *
+   * @param string $mode the mode of operation: live or test
+   *
+   * @return void
+   */
   function __construct($mode, &$paymentProcessor) {
     $this->_mode = $mode;
     $this->_paymentProcessor = $paymentProcessor;
@@ -34,14 +35,14 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
   }
 
   /**
-     * singleton function used to manage this object
-     *
-     * @param string $mode the mode of operation: live or test
-     *
-     * @return object
-     * @static
-     *
-     */
+   * singleton function used to manage this object
+   *
+   * @param string $mode the mode of operation: live or test
+   *
+   * @return object
+   * @static
+   *
+   */
   static function &singleton($mode, &$paymentProcessor) {
     $processorName = $paymentProcessor['name'];
     if (self::$_singleton[$processorName] === null) {
@@ -49,6 +50,10 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
     }
     return self::$_singleton[$processorName];
   }
+
+  /**
+   * @TODO Please document this function.
+   */
   function checkConfig() {
     $config = CRM_Core_Config::singleton();
 
@@ -69,39 +74,58 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
       return null;
     }
   }
+
+  /**
+   * @TODO Please document this function.
+   */
   function setExpressCheckOut(&$params) {
     CRM_Core_Error::fatal(ts('This function is not implemented'));
   }
+
+  /**
+   * @TODO Please document this function.
+   */
   function getExpressCheckoutDetails($token) {
     CRM_Core_Error::fatal(ts('This function is not implemented'));
   }
+
+  /**
+   * @TODO Please document this function.
+   */
   function doExpressCheckout(&$params) {
     CRM_Core_Error::fatal(ts('This function is not implemented'));
   }
+
+  /**
+   * @TODO Please document this function.
+   */
   function doDirectPayment(&$params) {
     CRM_Core_Error::fatal(ts('This function is not implemented'));
   }
 
   /**
-     * Main transaction function
-     *
-     * @param array $params  name value pair of contribution data
-     *
-     * @return void
-     * @access public
-     *
-     */
+   * Main transaction function
+   *
+   * @param array $params  name value pair of contribution data
+   *
+   * @return void
+   * @access public
+   *
+   */
   function doTransferCheckout(&$params, $component) {
     $component = strtolower($component);
     $cancelURL = $this->getCancelURL($component);
     $url = CRM_Utils_System::url("civicrm/payment/ipn", "processor_name=paystation",false, null, false);
     $config = CRM_Core_Config::singleton();
 
-   /*
-    * Build the private data string to pass to Paystation, which they will give back to us with the
-    * transaction result.  We are building this as a comma-separated list so as to avoid long URLs.
-    * Parameters passed: a=contactID, b=contributionID,c=contributionTypeID,d=invoiceID,e=membershipID,f=participantID,g=eventID,h=paystationID
-    */
+    /**
+     * Build the private data string to pass to Paystation, which they
+     * will give back to us with the transaction result.  We are
+     * building this as a comma-separated list so as to avoid long
+     * URLs.
+     *
+     * Parameters passed: a=contactID, b=contributionID,c=contributionTypeID,d=invoiceID,e=membershipID,f=participantID,g=eventID,h=paystationID
+     */
     $privateData = "a={$params['contactID']},b={$params['contributionID']},c={$params['contributionTypeID']},d={$params['invoiceID']},h={$this->_paymentProcessor['user_name']}";
 
     if ($component == 'event') {
@@ -123,7 +147,7 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
     $paystationURL = $this->_paymentProcessor['url_site'];
     $site = $config->userFrameworkResourceURL;
 
-    //"paystation&pstn_pi=".$pstn_pi."&pstn_gi=".$pstn_gi."&pstn_ms=".$merchantSession."&pstn_am=".$amount."&pstn_mr=".$pstn_mr."&pstn_nr=t";
+    // "paystation&pstn_pi=".$pstn_pi."&pstn_gi=".$pstn_gi."&pstn_ms=".$merchantSession."&pstn_am=".$amount."&pstn_mr=".$pstn_mr."&pstn_nr=t";
     $psParams = array(
       'pstn_pi' => $this->_paymentProcessor['user_name'],  // Paystation ID
       'pstn_gi' => $this->_paymentProcessor['password'],  // Gateway ID
@@ -136,9 +160,11 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
       'component' => $component,
       'qfKey' => $params['qfKey']
     );
+
     if ($this->_mode == 'test') {
       $psParams['pstn_tm'] = 't'; // Test mode
     }
+
     require_once 'PaystationUtils.php';// expect this wouldn't be required if converted to a module
     $utils = new PaystationUtils();
     $paystationParams = 'paystation&' . $utils->paystation_query_string_encode($psParams);
@@ -179,6 +205,7 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
       CRM_Core_Error::fatal(ts('Unable to establish connection to the payment gateway.'));
     }
   }
+
   /**
    * Handle return response from payment processor
    */
@@ -192,17 +219,20 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
       $httpRequest = array_merge($postXml, (array) $postXml['UserAdditionalVars']);
     }
     $data = isset($httpRequest['data']) ? $payFlowLinkIPN->stringToArray($httpRequest['data']) : array();
-    /*
-     * Get the password from the Payment Processor's table based on the Paystation User ID being
-    * passed back from the server
-    */
+
+    /**
+     * Get the password from the Payment Processor's table based on
+     * the Paystation User ID being passed back from the server
+     */
     $query = "
       SELECT url_site, url_api, password, user_name, signature
       FROM civicrm_payment_processor
       WHERE payment_processor_type = 'Paystation'
       AND user_name = %1
     ";
-    // updater's notes :not sure why you would continue at all if paystationID not set?
+
+    // updater's notes :not sure why you would continue at all if
+    // paystationID not set?
     if (isset($data['h'])) {
       $data['paystationID'] = $data['h'];
       $params = array(
@@ -211,14 +241,14 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
           'String'
         )
       );
-     $psSettings = & CRM_Core_DAO::executeQuery($query, $params);
+      $psSettings = & CRM_Core_DAO::executeQuery($query, $params);
 
-     while ($psSettings->fetch()) {
-      $psUrl = $psSettings->url_site;
-      $psApi = $psSettings->url_api;
-      $psUser = $psSettings->user_name;
-      $psKey = $psSettings->password;
-    }
+      while ($psSettings->fetch()) {
+        $psUrl = $psSettings->url_site;
+        $psApi = $psSettings->url_api;
+        $psUser = $psSettings->user_name;
+        $psKey = $psSettings->password;
+      }
 
       $rawPostData = array(
         'ti' => $httpRequest['ti'],
@@ -233,7 +263,6 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
     }
     else{
       CRM_Core_Error::debug_log_message( "Failed to decode return IPN string" );
-
     }
 
     $payFlowLinkIPN ->main($rawPostData, $psUrl, $psApi, $psUser, $psKey);
@@ -243,11 +272,13 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
   }
 
   /**
-  * Get URL which the browser should be returned to if they cancel or are unsuccessful
-  * @component string $omponent function is called from
-  * @return string $cancelURL Fully qualified return URL
-  * @todo Ideally this would be in the parent payment class
-  */
+   * Get URL which the browser should be returned to if they cancel or
+   * are unsuccessful
+   *
+   * @component string $omponent function is called from
+   * @return string $cancelURL Fully qualified return URL
+   * @todo Ideally this would be in the parent payment class
+   */
   function getCancelURL($component){
     $component = strtolower( $component );
     if ( $component != 'contribute' && $component != 'event' ) {
@@ -255,14 +286,13 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
     }
     if ( $component == 'event') {
       $cancelURL = CRM_Utils_System::url( 'civicrm/event/register',
-        "_qf_Confirm_display=true&qfKey={$params['qfKey']}",
-        false, null, false );
+                   "_qf_Confirm_display=true&qfKey={$params['qfKey']}",
+                   false, null, false );
     } else if ( $component == 'contribute' ) {
       $cancelURL = CRM_Utils_System::url( 'civicrm/contribute/transact',
-        "_qf_Confirm_display=true&qfKey={$params['qfKey']}",
-        false, null, false );
+                   "_qf_Confirm_display=true&qfKey={$params['qfKey']}",
+                   false, null, false );
     }
     return $cancelURL;
   }
-
 }

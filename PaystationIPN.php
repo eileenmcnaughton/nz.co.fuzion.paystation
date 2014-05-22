@@ -1,28 +1,29 @@
 <?php
 
-/*
- * Paystation Functionality Copyright (C) 2010 Elliot Pahl, Catalyst IT Limited
- * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License, version 3
+/**
+ * Paystation Functionality Copyright (C) 2010 Elliot Pahl, Catalyst IT Limited.
+ *
+ * @license http://www.gnu.org/licenses/agpl-3.0.html
+ *   GNU Affero General Public License, version 3
  */
-
 
 class PaystationIPN extends CRM_Core_Payment_BaseIPN {
 
   /**
-     * We only need one instance of this object. So we use the singleton
-     * pattern and cache the instance in this variable
-     *
-     * @var object
-     * @static
-     */
+   * We only need one instance of this object. So we use the singleton
+   * pattern and cache the instance in this variable
+   *
+   * @var object
+   * @static
+   */
   private static $_singleton = null;
 
   /**
-     * mode of operation: live or test
-     *
-     * @var object
-     * @static
-     */
+   * mode of operation: live or test
+   *
+   * @var object
+   * @static
+   */
   protected static $_mode = null;
   static function retrieve($name, $type, $object, $abort = true) {
     $value = CRM_Utils_Array::value($name, $object);
@@ -44,12 +45,12 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
   }
 
   /**
-     * Constructor
-     *
-     * @param string $mode the mode of operation: live or test
-     *
-     * @return void
-     */
+   * Constructor
+   *
+   * @param string $mode the mode of operation: live or test
+   *
+   * @return void
+   */
   function __construct($mode, &$paymentProcessor) {
     parent::__construct();
 
@@ -58,13 +59,13 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
   }
 
   /**
-     * singleton function used to manage this object
-     *
-     * @param string $mode the mode of operation: live or test
-     *
-     * @return object
-     * @static
-     */
+   * singleton function used to manage this object
+   *
+   * @param string $mode the mode of operation: live or test
+   *
+   * @return object
+   * @static
+   */
   static function &singleton($mode, $component, &$paymentProcessor) {
     if (self::$_singleton === null) {
       self::$_singleton = new PaystationIPN($mode, $paymentProcessor);
@@ -73,15 +74,15 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
   }
 
   /**
-     * The function gets called when a new order takes place.
-     *
-     * @param array  $privateData  contains the CiviCRM related data
-     * @param string $component    the CiviCRM component
-     * @param array  $merchantData contains the Merchant related data
-     *
-     * @return void
-     *
-     */
+   * The function gets called when a new order takes place.
+   *
+   * @param array  $privateData  contains the CiviCRM related data
+   * @param string $component    the CiviCRM component
+   * @param array  $merchantData contains the Merchant related data
+   *
+   * @return void
+   *
+   */
   function newOrderNotify($privateData, $component, $merchantData) {
     $ids = $input = $params = array();
 
@@ -104,7 +105,8 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
       return false;
     }
 
-    // make sure the invoice is valid and matches what we have in the contribution record
+    // make sure the invoice is valid and matches what we have in the
+    // contribution record
     $input['invoice'] = $privateData['invoiceID'];
     $input['newInvoice'] = $merchantData['PaystationTransactionID'];
     $contribution = & $objects['contribution'];
@@ -116,8 +118,9 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
       return;
     }
 
-    // lets replace invoice-id with Payment Processor -number because thats what is common and unique
-    // in subsequent calls or notifications sent by google.
+    // let's replace invoice-id with Payment Processor -number because
+    // thats what is common and unique in subsequent calls or
+    // notifications sent by processor
     $contribution->invoice_id = $input['newInvoice'];
 
     $input['amount'] = $merchantData['PurchaseAmount'];
@@ -134,35 +137,35 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
     $this->validateData($input, $ids, $objects);
 
     /**
-         * #=====================================================
-         * #ec response code lookup
-         * #=====================================================
-         * #ec = 0 : No error - transaction succesful
-         * #ec = 1 : Unknown error
-         * #ec = 2 : Bank declined transaction
-         * #ec = 3 : No reply from bank
-         * #ec = 4 : Expired card
-         * #ec = 5 : Insufficient funds
-         * #ec = 6 : Error communicating with bank
-         * #ec = 7 : Payment server system error
-         * #ec = 8 : Transaction type not supported
-         * #ec = 9 : Transaction failed
-         * #ec = 10 : Purchase amount less or greater than merchant values
-         * #ec = 11 : Paystation couldnt create order based on inputs
-         * #ec = 12 : Paystation couldnt find merchant based on merchant ID
-         * #ec = 13 : Transaction already in progress
-         * #note: These relate to qsiResponseCode from client
-         * #=====================================================
-         */
+     * #=====================================================
+     * #ec response code lookup
+     * #=====================================================
+     * #ec = 0 : No error - transaction succesful
+     * #ec = 1 : Unknown error
+     * #ec = 2 : Bank declined transaction
+     * #ec = 3 : No reply from bank
+     * #ec = 4 : Expired card
+     * #ec = 5 : Insufficient funds
+     * #ec = 6 : Error communicating with bank
+     * #ec = 7 : Payment server system error
+     * #ec = 8 : Transaction type not supported
+     * #ec = 9 : Transaction failed
+     * #ec = 10 : Purchase amount less or greater than merchant values
+     * #ec = 11 : Paystation couldnt create order based on inputs
+     * #ec = 12 : Paystation couldnt find merchant based on merchant ID
+     * #ec = 13 : Transaction already in progress
+     * #note: These relate to qsiResponseCode from client
+     * #=====================================================
+     */
     switch ($merchantData['PaystationErrorCode']) {
       // success
       case 0:
         break;
-      // unhandled
+        // unhandled
       case 1:
         return $this->unhandled($objects, $transaction);
         break;
-      // failed
+        // failed
       case 2:
       case 3:
       case 4:
@@ -176,14 +179,15 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
       case 12:
         return $this->failed($objects, $transaction);
         break;
-      /* pending?
-          case 13:
-            return $this->pending( $objects, $transaction );
-            break;
-          //*/
+        /* pending?
+           case 13:
+           return $this->pending( $objects, $transaction );
+           break;
+        //*/
     }
 
-    // check if contribution is already completed, if so we ignore this ipn
+    // check if contribution is already completed, if so we ignore
+    // this ipn
     if ($contribution->contribution_status_id == 1) {
       $transaction->commit();
       CRM_Core_Error::debug_log_message("returning since contribution has already been handled");
@@ -191,9 +195,12 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
       return true;
     }
     else {
-      /* Since trxn_id hasn't got any use here,
-             * lets make use of it by passing the eventID/membershipTypeID to next level.
-             * And change trxn_id to the payment processor reference before finishing db update */
+      /**
+       * Since trxn_id hasn't got any use here, lets make use of it by
+       * passing the eventID/membershipTypeID to next level.  And
+       * change trxn_id to the payment processor reference before
+       * finishing db update
+       */
       if ($ids['event']) {
         $contribution->trxn_id = $ids['event'] . CRM_Core_DAO::VALUE_SEPARATOR . $ids['participant'];
       }
@@ -206,16 +213,16 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
   }
 
   /**
-     * The function returns the component(Event/Contribute..)and whether it is Test or not
-     *
-     * @param array   $privateData    contains the name-value pairs of transaction related data
-     * @param int     $orderNo        <order-total> send by google
-     *
-     * @return array context of this call (test, component, payment processor id)
-     * @static
-     */
+   * The function returns the component(Event/Contribute..)and whether
+   * it is Test or not
+   *
+   * @param array   $privateData    contains the name-value pairs of transaction related data
+   * @param int     $orderNo        <order-total> send by google
+   *
+   * @return array context of this call (test, component, payment processor id)
+   * @static
+   */
   static function getContext($privateData, $orderNo) {
-
     $component = null;
     $isTest = null;
 
@@ -239,7 +246,8 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
 
     $duplicateTransaction = 0;
     if ($contribution->contribution_status_id == 1) {
-      //contribution already handled. (some processors do two notifications so this could be valid)
+      // contribution already handled. (some processors do two
+      // notifications so this could be valid)
       $duplicateTransaction = 1;
     }
 
@@ -260,8 +268,7 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
         exit();
       }
 
-      // we are in event mode
-      // make sure event exists and is valid
+      // we are in event mode, make sure event exists and is valid
       require_once 'CRM/Event/DAO/Event.php';
       $event = & new CRM_Event_DAO_Event();
       $event->id = $eventID;
@@ -292,10 +299,12 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
   }
 
   /**
-     * This method is handles the response that will be invoked by the
-     * notification or request sent by the payment processor.
-     * hex string from paymentexpress is passed to this function as hex string.
-     */
+   * This method is handles the response that will be invoked by the
+   * notification or request sent by the payment processor.
+   *
+   * hex string from paymentexpress is passed to this function as hex
+   * string.
+   */
   function main($rawPostData, $ps_url, $ps_api, $ps_user, $ps_key) {
     $config = CRM_Core_Config::singleton();
     define('RESPONSE_HANDLER_LOG_FILE', $config->uploadDir . 'CiviCRM.Paystation.log');
@@ -309,7 +318,7 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
     $qfKey = isset($rawPostData['qfKey']) ? $rawPostData['qfKey'] : '';
 
     // Quick lookup
-    //Setup the log file
+    // Setup the log file
     if (! $message_log = fopen(RESPONSE_HANDLER_LOG_FILE, "a")) {
       error_func("Cannot open " . RESPONSE_HANDLER_LOG_FILE . " file.\n", 0);
       exit(1);
@@ -344,13 +353,13 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
           $PaystationTransactionID = isset($responseData['PaystationTransactionID']) ? $responseData['PaystationTransactionID'] : '';
           $PurchaseAmount = isset($responseData['PurchaseAmount']) ? $responseData['PurchaseAmount'] / 100 : 0; // in cents
           /*
-                    $AcquirerName            = isset($responseData['AcquirerName']) ? $responseData['AcquirerName'] : '';
-                    $AcquirerMerchantID      = isset($responseData['AcquirerMerchantID']) ? $responseData['AcquirerMerchantID'] : '';
-                    $TransactionTime         = isset($responseData['TransactionTime']) ? $responseData['TransactionTime'] : '';
-                    $ReturnReceiptNumber     = isset($responseData['ReturnReceiptNumber']) ? $responseData['ReturnReceiptNumber'] : '';
-                    $AcquirerResponseCode    = isset($responseData['AcquirerResponseCode']) ? $responseData['AcquirerResponseCode'] : '';
-                    $MerchantSession         = isset($responseData['MerchantSession']) ? $responseData['MerchantSession'] : '';
-                    //*/
+            $AcquirerName            = isset($responseData['AcquirerName']) ? $responseData['AcquirerName'] : '';
+            $AcquirerMerchantID      = isset($responseData['AcquirerMerchantID']) ? $responseData['AcquirerMerchantID'] : '';
+            $TransactionTime         = isset($responseData['TransactionTime']) ? $responseData['TransactionTime'] : '';
+            $ReturnReceiptNumber     = isset($responseData['ReturnReceiptNumber']) ? $responseData['ReturnReceiptNumber'] : '';
+            $AcquirerResponseCode    = isset($responseData['AcquirerResponseCode']) ? $responseData['AcquirerResponseCode'] : '';
+            $MerchantSession         = isset($responseData['MerchantSession']) ? $responseData['MerchantSession'] : '';
+          //*/
 
           $errorCode = $PaystationErrorCode;
           if ($PaystationErrorCode == 0) {
@@ -392,7 +401,7 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
             $ipn->newOrderNotify($privateData, $component, $merchantData);
           }
 
-          //Check status and take appropriate action
+          // Check status and take appropriate action
           if ($component == "event") {
             $baseURL = 'civicrm/event/register';
             $query = $success ? "_qf_ThankYou_display=1&qfKey={$qfKey}" : "_qf_Register_display=1&cancel=1&qfKey={$qfKey}";
@@ -421,9 +430,9 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
   }
 
   /**
-     * Converts the comma separated name-value pairs in <TxnData2>
-     * to an array of values.
-     */
+   * Converts the comma separated name-value pairs in <TxnData2> to an
+   * array of values.
+   */
   static function stringToArray($str) {
     $str = urldecode($str);
     $vars = $labels = array();
@@ -435,4 +444,3 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
     return $vars;
   }
 }
-
