@@ -220,7 +220,15 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
     }
     elseif ($_GET['processor_name']) {
       $params = array(
-        'class_name' => $_GET['processor_name'],
+        'payment_processor_type_id' => civicrm_api3(
+          'payment_processor_type',
+          'getvalue',
+          array(
+            'name' => $_GET['processor_name'],
+            'return' => 'id',
+          )
+        ),
+        'is_test' => (CRM_Utils_Array::value('mode', $_GET) == 'test') ?  1 : 0,
       );
     }
     try {
