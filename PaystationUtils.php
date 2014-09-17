@@ -1,12 +1,14 @@
 <?php
 
-/*
+/**
  * Paystation Functionality Copyright (C) 2010 Elliot Pahl, Catalyst IT Limited
- * @license http://www.gnu.org/licenses/agpl-3.0.html GNU Affero General Public License, version 3
+ *
+ * @license http://www.gnu.org/licenses/agpl-3.0.html
+ *   GNU Affero General Public License, version 3
  */
 class PaystationUtils {
+
   /**
-   *
    * @param string $url
    * @param array $params
    * @return mixed
@@ -15,7 +17,7 @@ class PaystationUtils {
     $defined_vars = get_defined_vars();
     $http_user_agent = isset($defined_vars['HTTP_USER_AGENT']) ? $defined_vars['HTTP_USER_AGENT'] : '';
 
-    //use curl to get reponse
+    //use curl to get response
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_POST, 1);
     curl_setopt($curl, CURLOPT_POSTFIELDS, $params);
