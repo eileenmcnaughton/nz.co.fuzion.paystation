@@ -32,6 +32,7 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
     $this->_mode = $mode;
     $this->_paymentProcessor = $paymentProcessor;
     $this->_processorName = ts('Paystation');
+    $this->_processorId = $paymentProcessor->id;
   }
 
   /**
@@ -115,7 +116,7 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
   function doTransferCheckout(&$params, $component) {
     $component = strtolower($component);
     $cancelURL = $this->getCancelURL($component);
-    $url = CRM_Utils_System::url("civicrm/payment/ipn", "processor_name=paystation",false, null, false);
+    $url = CRM_Utils_System::url("civicrm/payment/ipn", "processor_id={$params['payment_processor']}",false, null, false);
     $config = CRM_Core_Config::singleton();
 
     /**
@@ -210,45 +211,39 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
    * Handle return response from payment processor
    */
   function handlePaymentNotification(){
-    require_once 'PaystationIPN.php';// expect this wouldn't be required if converted to a module
-    $payFlowLinkIPN = new PaystationIPN( );
+    // expect this wouldn't be required if converted to a module
+    require_once 'PaystationIPN.php';
+    if ($_GET['processor_id']) {
+      $params = array(
+        'id' => $_GET['processor_id'],
+      );
+    }
+    elseif ($_GET['processor_name']) {
+      $params = array(
+        'class_name' => $_GET['processor_name'],
+      );
+    }
+    try {
+      $paymentProcessor = civicrm_api3('payment_processor', 'getsingle', $params);
+    }
+    catch (Exception $e) {
+      CRM_Core_Error::fatal('Payment processor not found for params: ' . var_export($params,1));
+    }
+
+    $paystationIPN = new PaystationIPN();
     $httpRequest = $_GET;
     if(empty($httpRequest['data'] )){
       $postXml = (array) simplexml_load_string(file_get_contents("php://input"));
       $userData =  (array) $postXml['UserAdditionalVars'];
       $httpRequest = array_merge($postXml, (array) $postXml['UserAdditionalVars']);
     }
-    $data = isset($httpRequest['data']) ? $payFlowLinkIPN->stringToArray($httpRequest['data']) : array();
+    $data = isset($httpRequest['data']) ? $paystationIPN->stringToArray($httpRequest['data']) : array();
 
-    /**
-     * Get the password from the Payment Processor's table based on
-     * the Paystation User ID being passed back from the server
-     */
-    $query = "
-      SELECT url_site, url_api, password, user_name, signature
-      FROM civicrm_payment_processor
-      WHERE payment_processor_type = 'Paystation'
-      AND user_name = %1
-    ";
-
-    // updater's notes :not sure why you would continue at all if
-    // paystationID not set?
-    if (isset($data['h'])) {
-      $data['paystationID'] = $data['h'];
-      $params = array(
-        1 => array(
-          $data['paystationID'],
-          'String'
-        )
-      );
-      $psSettings = & CRM_Core_DAO::executeQuery($query, $params);
-
-      while ($psSettings->fetch()) {
-        $psUrl = $psSettings->url_site;
-        $psApi = $psSettings->url_api;
-        $psUser = $psSettings->user_name;
-        $psKey = $psSettings->password;
-      }
+    if (!empty($data)) {
+      $psUrl = $paymentProcessor['url_site'];
+      $psApi = $paymentProcessor['url_api'];
+      $psUser = $paymentProcessor['user_name'];
+      $psKey = $paymentProcessor['password'];
 
       $rawPostData = array(
         'ti' => $httpRequest['ti'],
@@ -265,9 +260,10 @@ class nz_co_fuzion_paystation extends CRM_Core_Payment {
       CRM_Core_Error::debug_log_message( "Failed to decode return IPN string" );
     }
 
-    $payFlowLinkIPN ->main($rawPostData, $psUrl, $psApi, $psUser, $psKey);
+    $paystationIPN->main($rawPostData, $psUrl, $psApi, $psUser, $psKey);
 
-    //if for any reason we come back here
+    // PaystationIPN::main() exits, but if for any reason we come back
+    // here, we'll file a written complaint to our seniors.
     CRM_Core_Error::debug_log_message( "It should not be possible to reach this line" );
   }
 

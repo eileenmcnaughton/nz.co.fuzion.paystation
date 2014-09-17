@@ -51,11 +51,15 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
    *
    * @return void
    */
-  function __construct($mode, &$paymentProcessor) {
+  function __construct($mode = NULL, &$paymentProcessor = NULL) {
     parent::__construct();
 
-    $this->_mode = $mode;
-    $this->_paymentProcessor = $paymentProcessor;
+    if (!is_null($mode)) {
+      $this->_mode = $mode;
+    }
+    if (!is_null($paymentProcessor)) {
+      $this->_paymentProcessor = $paymentProcessor;
+    }
   }
 
   /**
@@ -279,7 +283,7 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
       }
     }
     $paymentProcessorID = CRM_Core_DAO::getFieldValue(
-      'CRM_Core_DAO_PaymentProcessor',
+      'CRM_Financial_DAO_PaymentProcessor',
       'Paystation',
       'id',
       'payment_processor_type'
@@ -393,7 +397,7 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
           CRM_Core_Error::debug_var('component', $component);
           CRM_Core_Error::debug_var('duplicateTransaction', $duplicateTransaction);
 
-          $paymentProcessor = CRM_Core_BAO_PaymentProcessor::getPayment($paymentProcessorID, $mode);
+          $paymentProcessor = CRM_Financial_BAO_PaymentProcessor::getPayment($paymentProcessorID, $mode);
 
           $ipn = self::singleton($mode, $component, $paymentProcessor);
 
