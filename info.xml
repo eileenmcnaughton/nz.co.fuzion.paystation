@@ -11,7 +11,7 @@
   </urls>
   <license>AGPL</license>
   <maintainer>
-    <author>Elliot Pahl - Catalyst IT Limited, ported by Eileen McNaughton</author>
+    <author>Eileen McNaughton</author>
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
   <releaseDate>2012-02-13</releaseDate>
@@ -20,7 +20,6 @@
   <compatibility>
     <ver>4.2</ver>
     <ver>4.3</ver>
-    <ver>4.4</ver>
   </compatibility>
   <comments></comments>
   <typeInfo>
@@ -40,4 +39,4 @@
     <isRecur>0</isRecur>
     <paymentType>1</paymentType>
   </typeInfo>
-</extension> 
+</extension>
