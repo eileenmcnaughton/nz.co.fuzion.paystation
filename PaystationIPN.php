@@ -428,6 +428,7 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
     }
     else {
       // calling Paystation failed
+      CRM_Core_Error::debug_var('response', $response);
       CRM_Core_Error::fatal(ts('Unable to establish connection to the payment gateway to verify transaction response.'));
       exit();
     }
