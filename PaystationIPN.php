@@ -311,7 +311,7 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
    */
   function main($rawPostData, $ps_url, $ps_api, $ps_user, $ps_key) {
     $config = CRM_Core_Config::singleton();
-    define('RESPONSE_HANDLER_LOG_FILE', $config->uploadDir . 'CiviCRM.Paystation.log');
+    define('RESPONSE_HANDLER_LOG_FILE', $config->configAndLogDir . 'CiviCRM.Paystation.log');
     $transactionID = isset($rawPostData['ti']) ? $rawPostData['ti'] : '';
     $errorCode = isset($rawPostData['ec']) ? $rawPostData['ec'] : '';
     $errorMessage = isset($rawPostData['em']) ? $rawPostData['em'] : '';
