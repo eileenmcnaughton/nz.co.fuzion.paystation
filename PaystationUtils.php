@@ -45,7 +45,6 @@ class PaystationUtils {
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($curl, CURLOPT_FOLLOWLOCATION, false);
     curl_setopt($curl, CURLOPT_HEADER, 0);
-    curl_setopt($curl, CURLOPT_SSLVERSION, 3);
 
     fwrite($message_log, sprintf("\n\r%s:- %s\n", date("D M j G:i:s T Y"), $curl));
 
