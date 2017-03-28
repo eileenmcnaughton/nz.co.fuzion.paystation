@@ -7,7 +7,7 @@
  *   GNU Affero General Public License, version 3
  */
 
-class PaystationIPN extends CRM_Core_Payment_BaseIPN {
+class CRM_Core_Payment_PaystationIPN extends CRM_Core_Payment_BaseIPN {
 
   /**
    * We only need one instance of this object. So we use the singleton
@@ -72,7 +72,7 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
    */
   static function &singleton($mode, $component, &$paymentProcessor) {
     if (self::$_singleton === null) {
-      self::$_singleton = new PaystationIPN($mode, $paymentProcessor);
+      self::$_singleton = new CRM_Core_Payment_PaystationIPN($mode, $paymentProcessor);
     }
     return self::$_singleton;
   }
@@ -337,8 +337,7 @@ class PaystationIPN extends CRM_Core_Payment_BaseIPN {
     $success = false;
 
     // Perform the quick lookup to get data from Paystation
-    require_once 'PaystationUtils.php';
-    $utils = new PaystationUtils();
+    $utils = new CRM_Core_Payment_PaystationUtils();
     if ($response = $utils->quickLookup($url, $message_log)) {
       //CRM_Core_Error::debug_var('response', $response);
       fwrite($message_log, sprintf("\n\r%s:- %s\n", date("D M j G:i:s T Y"), " LINE " . __LINE__ . ' ' . $response));

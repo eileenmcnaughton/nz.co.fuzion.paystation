@@ -1,42 +1,27 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<extension key="nz.co.fuzion.paystation" type="payment">
-  <file>Paystation</file>
+<?xml version="1.0"?>
+<extension key="nz.co.fuzion.paystation" type="module">
+  <file>paystation</file>
   <name>Paystation</name>
   <description>Paystation Payment Processor</description>
-  <urls>
-    <url desc="Main Extension Page"></url>
-    <url desc="Documentation"></url>
-    <url desc="Support"></url>
-    <url desc="Licensing"></url>
-  </urls>
-  <license>AGPL</license>
+  <license>AGPL-3.0</license>
   <maintainer>
     <author>Eileen McNaughton</author>
     <email>eileen@fuzion.co.nz</email>
   </maintainer>
-  <releaseDate>2012-02-13</releaseDate>
-  <version>2.0</version>
-  <develStage>stable</develStage>
+  <urls>
+    <url desc="Main Extension Page"></url>
+    <url desc="Documentation"></url>
+    <url desc="Support"></url>
+    <url desc="Licensing">http://www.gnu.org/licenses/agpl-3.0.html</url>
+  </urls>
+  <releaseDate>2017-03-22</releaseDate>
+  <version>3.0</version>
+  <develStage>alpha</develStage>
   <compatibility>
-    <ver>4.2</ver>
-    <ver>4.3</ver>
+    <ver>4.7</ver>
   </compatibility>
   <comments></comments>
-  <typeInfo>
-    <userNameLabel>Paystation ID</userNameLabel>
-    <passwordLabel>Gateway ID</passwordLabel>
-    <signatureLabel></signatureLabel>
-    <subjectLabel></subjectLabel>
-    <urlSiteDefault>https://www.paystation.co.nz/direct/paystation.dll</urlSiteDefault>
-    <urlApiDefault>https://www.paystation.co.nz/lookup/quick/</urlApiDefault>
-    <urlRecurDefault></urlRecurDefault>
-    <urlSiteTestDefault>https://www.paystation.co.nz/direct/paystation.dll</urlSiteTestDefault>
-    <urlApiTestDefault>https://www.paystation.co.nz/lookup/quick/</urlApiTestDefault>
-    <urlRecurTestDefault></urlRecurTestDefault>
-    <urlButtonDefault></urlButtonDefault>
-    <urlButtonTestDefault></urlButtonTestDefault>
-    <billingMode>notify</billingMode>
-    <isRecur>0</isRecur>
-    <paymentType>1</paymentType>
-  </typeInfo>
+  <civix>
+    <namespace>CRM/Paystation</namespace>
+  </civix>
 </extension>
