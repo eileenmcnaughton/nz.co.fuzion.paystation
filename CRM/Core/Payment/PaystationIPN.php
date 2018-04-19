@@ -181,7 +181,14 @@ class CRM_Core_Payment_PaystationIPN extends CRM_Core_Payment_BaseIPN {
       case 10:
       case 11:
       case 12:
-        return $this->failed($objects, $transaction);
+        CRM_Contribute_BAO_Contribution::failPayment($contribution->id, $contribution->contact_id, 'Payment Failed');
+        $contributionStatuses = CRM_Contribute_PseudoConstant::contributionStatus(NULL, 'name');
+        $params = array(
+          'contribution_id' => $contribution->id,
+          'contribution_status_id' => array_search('Failed', $contributionStatuses),
+        );
+        CRM_Contribute_BAO_Contribution::transitionComponents($params);
+        return;
         break;
         /* pending?
            case 13:
