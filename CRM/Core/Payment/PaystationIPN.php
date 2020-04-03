@@ -238,7 +238,7 @@ class CRM_Core_Payment_PaystationIPN extends CRM_Core_Payment_BaseIPN {
     $isTest = null;
 
     $contributionID = $privateData['contributionID'];
-    $contribution = & new CRM_Contribute_DAO_Contribution();
+    $contribution = new CRM_Contribute_DAO_Contribution();
     $contribution->id = $contributionID;
 
     if (! $contribution->find(true)) {
@@ -281,7 +281,7 @@ class CRM_Core_Payment_PaystationIPN extends CRM_Core_Payment_BaseIPN {
 
       // we are in event mode, make sure event exists and is valid
       require_once 'CRM/Event/DAO/Event.php';
-      $event = & new CRM_Event_DAO_Event();
+      $event = new CRM_Event_DAO_Event();
       $event->id = $eventID;
       if (! $event->find(true)) {
         CRM_Core_Error::debug_log_message("Could not find event: $eventID");
